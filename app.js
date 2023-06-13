@@ -2,9 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const { errors } = require('celebrate');
+const rateLimiter = require('./rateLimiter');
 const { signIn, signUp } = require('./middlewares/validations');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { login, createUser } = require('./controllers/user');
@@ -17,8 +17,11 @@ const { PORT = 3000 } = process.env;
 const app = express();
 app.use(cors());
 
-app.use(bodyParser.json()); // для собирания JSON-формата
-app.use(bodyParser.urlencoded({ extended: true })); // для приёма веб-страниц внутри POST-запроса
+// применяем лимитер ко всем маршрутам, начинающимся с /api/
+app.use('/api/', rateLimiter);
+
+app.use(express.json()); // для собирания JSON-формата
+app.use(express.urlencoded({ extended: true })); // для приёма веб-страниц внутри POST-запроса
 
 // подключаемся к серверу mongo
 mongoose.connect('mongodb://127.0.0.1:27017/bitfilmsdb')

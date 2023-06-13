@@ -4,9 +4,9 @@ const NotFoundError = require('../errors/not-found-err');
 const FordBidden = require('../errors/fordbidden-err');
 
 module.exports.getMovies = (req, res, next) => {
-  // найти вообще всех
-  Movie.find({})
-    .then((cards) => res.send(cards))
+  const userId = req.user._id;
+  Movie.find({ owner: userId })
+    .then((movies) => res.send(movies))
     .catch(next);
 };
 
@@ -39,7 +39,7 @@ module.exports.createMovie = (req, res, next) => {
     movieId,
     owner: req.user._id,
   })
-    .then((card) => res.status(201).send(card))
+    .then((movie) => res.status(201).send(movie))
     .catch((err) => {
       if (err.name === 'ValidationError') return next(new BadRequestError('Переданы некорректные данные при создании фильма.'));
       return next(err);
